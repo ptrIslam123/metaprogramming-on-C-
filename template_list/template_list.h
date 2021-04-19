@@ -8,7 +8,7 @@
 namespace meta
 {
 
-    struct nil {};
+    struct nil;
 
     template<class T, class ... Args>
     class list;
@@ -18,7 +18,7 @@ namespace meta
 
 
 
-    template<class T = int, class ... Args>
+    template<class T = nil, class ... Args>
     class list
     {
     public:
@@ -31,6 +31,20 @@ namespace meta
         list(const value_type& value, const Args& ... args);
         ~list();
 
+        
+       friend std::ostream& operator << (std::ostream& os, list<T, Args ...>* pl)
+       {
+           pl->print_list(pl->twin_);
+           return os;
+       }
+       
+
+       value_type&          get_value();
+       twin_type&           get_twin();
+
+       value_type*          get_ptr_value();
+       twin_type*           get_ptr_twin();
+    
         void                print_list(twin_type* p_twin);
         void                clear_list(twin_type* p_twin);
     };
@@ -63,10 +77,45 @@ namespace meta
 
 
     template<class T, class ... Args>
+    typename list<T, Args ...>::value_type& 
+    list<T, Args ...>::get_value()
+    {
+        return *value_;
+    }
+
+
+
+    template<class T, class ... Args>
+    typename list<T, Args ...>::twin_type& 
+    list<T, Args ...>::get_twin()
+    {
+        return *twin_;
+    }
+
+
+    template<class T, class ... Args>
+    typename list<T, Args ...>::value_type* 
+    list<T, Args ...>::get_ptr_value()
+    {
+        return value_;
+    }
+
+
+
+    template<class T, class ... Args>
+    typename list<T, Args ...>::twin_type* 
+    list<T, Args ...>::get_ptr_twin()
+    {
+        return twin_;
+    }
+
+    template<class T, class ... Args>
     list<T, Args ...>::~list()
     {
         this->clear_list(this->twin_);
     }
+
+
 
 
     template<class T, class ... Args>
@@ -96,6 +145,16 @@ namespace meta
         delete value_;
         value_ = nullptr;
     }
+
+
+    struct nil 
+    {
+        friend std::ostream& operator << (std::ostream& os, nil& n)
+        {
+            os << "_nil_" << std::endl;
+            return os;
+        }
+    };
 
 
     template<class ... Args>
