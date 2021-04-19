@@ -3,12 +3,13 @@
 
 #include <iostream>
 #include <memory>
+
+#include "tools.h"
+
 #define _DEBUG_META_LIST_
 
 namespace meta
 {
-
-    struct nil;
 
     template<class T, class ... Args>
     class list;
@@ -145,16 +146,6 @@ namespace meta
         delete value_;
         value_ = nullptr;
     }
-
-
-    struct nil 
-    {
-        friend std::ostream& operator << (std::ostream& os, nil& n)
-        {
-            os << "_nil_" << std::endl;
-            return os;
-        }
-    };
 
 
     template<class ... Args>

@@ -6,6 +6,8 @@ set(MAIN "main.cpp")
 
 include_directories(
     template_list
+    variant
+    tools
 )
 
 add_executable(main ${MAIN})
