@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 2.1)
+cmake_minimum_required(VERSION 3.1)
 
 project(metaPrograming)
 
 
 set(MAIN "main.cpp")
 
+
+
+include_directories(tools)
 
 include_directories(
     template_list
@@ -14,6 +17,6 @@ include_directories(
 )
 
 
-add_definitions( -g )
+add_definitions( -Wall -g )
 
 add_executable(main ${MAIN})

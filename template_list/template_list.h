@@ -6,153 +6,126 @@
 
 #include "tools.h"
 
-#define _DEBUG_META_LIST_
-
 namespace meta
 {
 
-    template<class T, class ... Args>
-    class list;
+    template<class ... Args>
+    struct list;
+
+
+    template<>
+    struct list<>
+    {
+        using size_type = std::size_t;
+        static constexpr size_type size = 0;
+    };
+
 
     template<class ... Args>
     std::unique_ptr<list<Args ...>> make_list(const Args& ... args);
 
 
 
-    template<class T = nil, class ... Args>
-    class list
+    template<class T, class ... Args>
+    struct list<T, Args...>
     {
-    public:
-        using value_type    = T;
-        using twin_type     = list<Args ...>;
+        using size_type                 = std::size_t; 
+        using pos_type                  = size_type;
+        using value_type                = T;
+        using element_type              = std::pair<pos_type, value_type>;
+        using tail_type                 = list<Args ...>;
 
-        value_type*         value_;
-        twin_type*          twin_;
+        static constexpr size_type size = sizeof ... (Args) + 1;
 
         list(const value_type& value, const Args& ... args);
-        ~list();
+        ~list() = default;
 
+
+        const element_type&             get_element() const;
+        value_type&                     get_value();
+        tail_type&                      get_tail();
+
+    private:
+        pos_type                        eval_pos();
+
+    private:
         
-       friend std::ostream& operator << (std::ostream& os, list<T, Args ...>* pl)
-       {
-           pl->print_list(pl->twin_);
-           return os;
-       }
-       
-
-       value_type&          get_value();
-       twin_type&           get_twin();
-
-       value_type*          get_ptr_value();
-       twin_type*           get_ptr_twin();
-    
-        void                print_list(twin_type* p_twin);
-        void                clear_list(twin_type* p_twin);
+        element_type _element;
+        tail_type _tail;
     };
 
 
+    template<class T, class ... Args>
+    using value_type = typename list<T, Args ...>::value_type;
 
     template<class T, class ... Args>
-    using _value_type = typename list<T, Args...>::value_type;
+    using tail_type = typename list<T, Args ...>::tail_type;
+
+    template<class T, class ... Args>
+    using element_type = typename list<T, Args ...>::element_type;
+
+    template<class T, class ... Args>
+    using pos_type = typename list<T, Args ...>::pos_type;
+
+
+
+   template<class T, class ... Args>
+   list<T, Args ...>::list(const value_type& value, const Args& ... args):
+        _element(std::pair<pos_type, value_type>(eval_pos(), value)),
+        _tail(tail_type(args ...))
+   {}
+
+
+   template<class T, class ... Args>
+   typename list<T, Args ...>::value_type& list<T, Args ...>::get_value()
+   {
+       return _element.second;
+   }
+    
+    
+   template<class T, class ... Args>
+   typename list<T, Args ...>::tail_type& list<T, Args ...>::get_tail()
+   {
+       return _tail;
+   }
 
 
     template<class T, class ... Args>
-    using _twin_type = typename list<T, Args...>::twin_type;
-
-
-
-
-
-    template<class T, class ... Args>
-    list<T, Args ...>::list(const value_type& value, const Args& ... args):
-        value_(nullptr),
-        twin_(nullptr)
+    const typename list<T, Args ...>::element_type& list<T, Args ...>::get_element() const
     {
-        value_ = new value_type(value);
-
-        if constexpr (sizeof ... (args) > 0)
-        {
-            twin_ = new twin_type(args ...);
-        }
+        return _element;
     }
+   
 
 
-    template<class T, class ... Args>
-    typename list<T, Args ...>::value_type& 
-    list<T, Args ...>::get_value()
-    {
-        return *value_;
-    }
-
-
-
-    template<class T, class ... Args>
-    typename list<T, Args ...>::twin_type& 
-    list<T, Args ...>::get_twin()
-    {
-        return *twin_;
-    }
-
-
-    template<class T, class ... Args>
-    typename list<T, Args ...>::value_type* 
-    list<T, Args ...>::get_ptr_value()
-    {
-        return value_;
-    }
-
-
-
-    template<class T, class ... Args>
-    typename list<T, Args ...>::twin_type* 
-    list<T, Args ...>::get_ptr_twin()
-    {
-        return twin_;
-    }
-
-    template<class T, class ... Args>
-    list<T, Args ...>::~list()
-    {
-        this->clear_list(this->twin_);
-    }
-
-
-
-
-    template<class T, class ... Args>
-    void list<T, Args ...>::print_list(list<T, Args ...>::twin_type* p_twin)
-    {
-        std::cout << *value_ << std::endl;
-
-        if (p_twin != nullptr)
-        {
-            p_twin->print_list(p_twin->twin_);
-        }
-    }
-
-
-    template<class T, class ... Args>
-    void list<T, Args ...>::clear_list(list<T, Args ...>::twin_type* p_twin)
-    {
-        if (p_twin != nullptr)
-        {
-            p_twin->clear_list(p_twin->twin_);
-        }
-
-        #ifndef _DEBUG_META_LIST_
-            std::cout << "delete : " << *(value_) << std::endl;
-        #endif // !_DEBUG_META_LIST_
-        
-        delete value_;
-        value_ = nullptr;
-    }
 
 
     template<class ... Args>
     std::unique_ptr<list<Args ...>> make_list(const Args& ... args)
     {
-        return std::make_unique<list<Args ...>>(args ...);
+        return std::make_unique<list<Args ...>>(
+            list<Args ...>(args ...)
+        );
     }
-}
+
+
+    template<class T, class ... Args>
+    typename list<T, Args ...>::pos_type list<T, Args ...>::eval_pos()
+    {
+        return sizeof ... (Args) + 1;
+    }
+
+
+
+
+
+    template<class T>
+    void print_list(const T& _list)
+    {
+
+    }
+
+} // namespace meta
+
 
 #endif // !_TEMPLATE_LIST_H_
